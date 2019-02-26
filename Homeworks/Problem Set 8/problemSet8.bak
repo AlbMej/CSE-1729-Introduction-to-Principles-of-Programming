@@ -1,0 +1,392 @@
+"Huffman support functions"
+(define (string->symbol-list str)
+  ;; takes a string, returns list of symbols
+  ;; spaces are used to delimit strings representing symbols
+  ;; newlines are turned into the symbol 'newline in the output list
+  (define (string->symbol-list-aux char-lst)
+    (cond ((null? char-lst) '())
+          ((eq? (car char-lst) #\space)
+           (string->symbol-list-aux (cdr char-lst)))
+          ((eq? (car char-lst) #\newline)
+           (cons 'newline (string->symbol-list-aux (cdr char-lst))))
+          (else
+           (cons (get-first-symbol char-lst)
+                 (string->symbol-list-aux (remove-first-symbol char-lst))))))
+  (string->symbol-list-aux (string->list str)))
+
+(define (get-first-symbol char-lst)
+  ; given a list of characters not starting with space or newline
+  ; returns a symbol made from the characters up to a space newline or end of list
+  (define (gfs-iter char-lst sofar)
+    (cond ((or (null? char-lst)
+               (eq? (car char-lst) #\space)
+               (eq? (car char-lst) #\newline))
+           (string->symbol (list->string (reverse sofar))))
+          (else
+           (gfs-iter (cdr char-lst) (cons (car char-lst) sofar)))))
+  (gfs-iter char-lst '()))
+
+(define (remove-first-symbol char-lst)
+  ; given a list of characters not starting with space or newline
+  ; returns the list with all characters up to a space, newline,
+  ; or end of list removed
+  (cond ((or (null? char-lst)
+             (eq? (car char-lst) #\space)
+             (eq? (car char-lst) #\newline))
+         char-lst)
+        (else
+         (remove-first-symbol (cdr char-lst)))))
+
+(define (symbol-list->string sym-lst)
+  ; given a list of symbols, turns it into a string
+  ; by adding space characters between strings representing
+  ; symbols, and adds newline characters wherever there is
+  ; the 'newline symbol
+  (cond ((null? sym-lst) "")
+        ((eq? (car sym-lst) 'newline)
+         (string-append (list->string (list #\newline)) (symbol-list->string (cdr sym-lst))))
+        (else (string-append (symbol->string (car sym-lst))
+                             " "
+                             (symbol-list->string (cdr sym-lst))))))
+
+(define (surfin-bird) 
+  "a well a everybodys heard about the bird
+bird bird bird b-birds the word
+a well a bird bird bird the bird is the word
+a well a bird bird bird well the bird is the word
+a well a bird bird bird b-birds the word
+a well a bird bird bird well the bird is the word
+a well a bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a bird bird bird well the bird is the word
+a well a bird bird b-birds the word
+a well a dont you know about the bird
+well everybody knows that the bird is the word
+a well a bird bird b-birds the word
+a well a
+
+a well a everybodys heard about the bird
+bird bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a bird bird bird b-birds the word
+a well a dont you know about the bird
+well everybodys talking about the bird
+a well a bird bird b-birds the word
+a well a bird
+
+surfin bird
+bbbbbbbbbbbbbbbbbb aaah
+
+pa pa pa pa pa pa pa pa pa pa pa pa pa pa pa pa
+pa pa pa pa pa pa pa pa pa pa pa pa pa pa ooma mow mow
+papa ooma mow mow
+
+papa ooma mow mow papa ooma mow mow
+papa ooma mow mow papa ooma mow mow
+ooma mow mow papa ooma mow mow
+papa ooma mow mow papa ooma mow mow
+papa ooma mow mow papa ooma mow mow
+oom oom oom oom ooma mow mow
+papa ooma mow mow papa oom oom oom
+oom ooma mow mow papa ooma mow mow
+ooma mow mow papa ooma mow mow
+papa a mow mow papa ooma mow mow
+papa ooma mow mow ooma mow mow
+papa ooma mow mow ooma mow mow
+papa oom oom oom oom ooma mow mow
+oom oom oom oom ooma mow mow
+ooma mow mow papa ooma mow mow
+papa ooma mow mow ooma mow mow
+well dont you know about the bird
+well everybody knows that the bird is the word
+a well a bird bird b-birds the word
+
+papa ooma mow mow papa ooma mow mow
+papa ooma mow mow papa ooma mow mow
+papa ooma mow mow papa ooma mow mow")
+
+; see what (string->symbol-list (surfin-bird) produces
+
+
+;; extra functions using bit sequences
+;; the strings here are strings of 0s and 1s
+;; a bit-sequence is simply an integer
+;; a 1 is added to the start of each bit-sequence
+;; as (number->string x 2) drops leading zeroes
+
+(define (bit-sequence->string num)
+  (define (rem-first string)
+    (substring string 1 (string-length string)))
+  (rem-first (number->string num 2)))
+
+(define (string->bit-sequence  str)
+  (string->number (string-append "1" str) 2))
+
+;; try (bit-sequence->string 1729) and then invert it with string->bit-sequence
+
+(define (log2 x)
+  (/ (log x)(log 2)))
+
+"Problem 1"
+(define (remove-all x l)
+  (cond ((null? l) l)
+        ((equal? (car l) x) (remove-all x (cdr l)))
+        (else (cons (car l) (remove-all x (cdr l))))))
+
+(define (num-occurs sym lst)
+  (cond ((null? lst) 0)
+        ((eq? sym (car lst)) (+ 1 (num-occurs sym (cdr lst))))
+        (else (num-occurs sym (cdr lst)))))
+
+(define (freq-list symlst)
+  (define (getsym result symlst)
+    (cond ((null? symlst) result)
+          (else (getsym (cons (cons (car symlst) (num-occurs (car symlst) symlst)) result)
+                        (remove-all (car symlst) symlst)))))
+  (getsym '() symlst))
+
+(define (word-frequencies str)
+  (freq-list (string->symbol-list str)))
+
+;(freq-list (string->symbol-list "da doo ron ron ron da doo ron ron"))
+
+(word-frequencies "da doo ron ron ron da doo ron ron")
+; Output should be (( ron . 5) ( doo . 2) ( da . 2))
+
+;(freq-list (string->symbol-list "da doo ron ron ron da doo ron ron"))
+
+"Problem 2a"
+(define (value vw-pair) (car vw-pair))
+(define (weight vw-pair) (cdr vw-pair))
+
+(define (make-internal-node 0-tree 1-tree)
+  (make-tree 'internal 0-tree 1-tree))
+
+(define (make-tree value left right ) (list value left right ))
+(define hpair1 (cons (make-tree 'doo '() '()) 21))
+hpair1
+;((doo ()()) . 21)
+(define hpair2 (cons (make-tree 'da '() '()) 12))
+hpair2
+;((da ()()) . 12)
+
+(define (combine-htree-pairs hp1 hp2)
+  (cons (make-internal-node (car hp1) (car hp2)) (+ (weight hp1) (weight hp2))))
+
+(combine-htree-pairs hpair1 hpair2)
+;((internal ( doo ()()) ( da ()())) . 33)
+
+"Problem 2b"
+(define (create-heap vw-pair left right)
+  (list vw-pair left right))
+
+(define (h-min H) (car H))
+
+(define (left H) (cadr H))
+
+(define (right H) (caddr H))
+
+(define (combine-heaps H1 H2)
+  (cond ((null? H1) H2)
+        ((null? H2) H1)
+        ((< (weight (h-min H1)) (weight (h-min H2)))
+         (create-heap (h-min H1)
+                      H2
+                      (combine-heaps (left H1) (right H1))))
+        (else
+         (create-heap (h-min H2)
+                      H1
+                      (combine-heaps (left H2) (right H2))))))
+
+(define (insert vw-pair heap)
+  (cond ((null? heap) (create-heap vw-pair '() '()))
+        ((< (weight vw-pair) (weight (h-min heap))) (create-heap vw-pair
+                                                                 (right heap)
+                                                                 (insert (h-min heap) (left heap))))
+        (else (create-heap (h-min heap)
+                           (right heap)
+                           (insert vw-pair (left heap))))))
+
+(define (insert-list-of-pairs vw-pair-list heap)
+  (if (null? vw-pair-list)
+      heap
+      (insert-list-of-pairs (cdr vw-pair-list) (insert (car vw-pair-list) heap))))
+
+(define (remove-min H)
+  (if (null? H)
+      '()
+      (combine-heaps (left H) (right H))))
+
+(define (build-huffman sf-list)
+  ;(display sf-list)
+  (define (helping_huffman heap)
+    
+    ;(display min1)
+    (if (null? (remove-min heap))
+        (car (h-min heap))
+        (let* ( (min1 (h-min heap))
+                (min2 (h-min (remove-min heap)))
+                (supermin (remove-min (remove-min heap))))
+          ;(display min1)
+          ;(display "***")
+          (helping_huffman (insert (combine-htree-pairs min1 min2) supermin ))))) ;cdr vs remove-min
+  ;(helping_huffman '() sf-list))
+  (helping_huffman (insert-list-of-pairs
+                    (map
+                     (lambda (x)
+                       (cons (create-heap (car x) '() '()) (cdr x)))
+                     sf-list) '())))
+
+
+(build-huffman '(( ron . 57) ( doo . 21) ( da . 12)))
+
+
+
+;(internal ( internal ( da () ()) ( doo () ())) ( ron () ()))
+
+"Problem 3"
+(define (prepare x )
+  (cond ((number? x) (number->string x ))
+        ((char? x) (string x ))))
+
+(define (get-encoding-list huffman_tree)
+  (define (help_encode htree freq)
+    ;(display (value htree))
+    ;(display  "***")
+    ;(display (h-min htree))
+    ;(display "---")
+    (cond ((null? htree) '())
+          ((eq? (value htree) 'internal) (append (help_encode (right htree) (string-append freq "1")) (help_encode (left htree) (string-append freq "0"))))
+          (else (append (cons (cons (value htree) freq) (help_encode (right htree) (string-append freq "1"))) (help_encode (left htree) (string-append freq "0"))))))
+  (help_encode huffman_tree ""))
+
+(get-encoding-list (build-huffman '(( ron . 57) ( doo . 21) ( da . 12))))
+
+"Problem 4"
+#| (define (encode str lst)
+  (define (help_encode lststr lst)
+    ;(display lststr)
+    ;(display "***")
+    (cond ((null? lst) "")
+          ((eq? (caar lst) (car lststr)) (string-append (cdar lst) (help_encode (cdr lststr) (cdr lst))))
+          (else (help_encode (cdr lststr) (cdr lst)))))
+  (help_encode (string->symbol-list str) lst))
+
+
+(define (encode str lst)
+  (define (mapping sym)
+    
+  (define (help_encode lststr lst)
+    (display lststr)
+    (display "***")
+    (display (eq? (caar lst) (car lststr)))
+    (display "---")
+    (display (car lst))
+    (display "---")
+    ;(define remove 
+    (cond ((null? lst) "")
+          ((eq? (caar lst) (car lststr)) (cdar lst))
+          (else (string-append (help_encode (cdr lststr) lst)))))
+  (help_encode (string->symbol-list str) lst)))
+
+
+(encode "doo doo doo da da da da "
+        '(( da . " 00 " ) ( doo . " 01 ") ( ron . "1 " )))
+
+|#
+
+(define (encode str encoding-list)
+  (define (get-num sym destructive-list)
+    (cond ((null? destructive-list) "")
+          ((eq? sym (caar destructive-list)) (cdar destructive-list))
+          (else (get-num sym (cdr destructive-list)))))
+  (define (recurse-dlst strlst og-list)
+    (if (null? strlst)
+        ""
+        (string-append (get-num (car strlst) og-list)
+                       (recurse-dlst (cdr strlst) og-list))))
+  (recurse-dlst (string->symbol-list str) encoding-list))
+  
+(encode "doo doo doo da da da da "
+        '(( da . "00" ) ( doo . "01") ( ron . "1" )))
+;"01010100000000 "
+
+(encode "moo moo moo moo moo"
+        '((moo . "01")))
+
+"Problem 5"
+(define (explode x)
+  (define (help n lst)
+    (if (= n 0)
+        lst
+        (help (floor (/ n 10)) (cons (modulo n 10) lst))))
+  (if (= x 0)
+      (list x)
+      (help x '())))
+
+(explode 12345)
+(explode 1458)
+(explode 8541)
+(explode 01)
+;(explode (string->list "01010100000000"))
+
+#|
+(define (decode str huff-tree)
+  (define (findword codelst destructive-tree)
+    ;(display "***")
+    ;(display destructive-tree)
+    ;(display codelst)
+    (display (and (left destructive-tree) (right destructive-tree)))
+    (cond ((null? (and (left destructive-tree) (right destructive-tree))) (car (destructive-tree))
+          ((null? codelst) '())
+          ((= (car codelst) 0) (findword (cdr codelst) (left destructive-tree)))
+          ((= (car codelst) 1) (findword (cdr codelst) (right destructive-tree) )))))
+  (define (recurse-dtree lst og-tree stop-iter)
+    ;(display og-tree)
+    (if (null? stop-iter)
+        '()
+        (append (findword lst og-tree)
+                       (recurse-dtree lst og-tree (cdr stop-iter)))))
+       (recurse-dtree (explode (string->number str)) huff-tree (explode (string->number str))))
+|#
+
+
+;(decode "01010100000000"  ( build-huffman '(( ron . 57) ( doo . 21) ( da . 12))))
+
+(define (decode str huff-tree)
+  (define (findword codelst destructive-tree result)
+   
+    (cond 
+          ((and (null? (left destructive-tree)) (null? (right destructive-tree)))
+          (findword codelst huff-tree (append result (list (car destructive-tree)))))
+          ((null? codelst) (symbol-list->string result))
+          ((eq? (car codelst) #\0) (findword (cdr codelst) (left destructive-tree) result))
+
+          ((eq? (car codelst) #\1) (findword (cdr codelst) (right destructive-tree) result ))))
+  (findword (string->list str) huff-tree '()))
+
+( build-huffman '(( ron . 57) ( doo . 21) ( da . 12)))
+(decode "01010100000000"  ( build-huffman '(( ron . 57) ( doo . 21) ( da . 12))))
+
+"Problem 6a"
+;(word-frequencies (surfin-bird))
+
+"Problem 6b"
+(define surfin-bird-huffman (build-huffman (word-frequencies (surfin-bird))))
+
+"Problem 6c"
+(define surfin-bird-codelst (get-encoding-list surfin-bird-huffman))
+
+"Problem 6d"
+(define surfin-bird-encoded (encode (surfin-bird) surfin-bird-codelst))
+;(encode (surfin-bird) surfin-bird-codelst)
+
+"Problem 6e"
+(define decoded-surfin-bird (decode surfin-bird-encoded surfin-bird-huffman))
+(display decoded-surfin-bird)
+

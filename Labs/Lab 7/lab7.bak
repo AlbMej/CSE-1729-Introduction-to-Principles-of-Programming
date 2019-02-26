@@ -1,0 +1,15 @@
+"Problem 1"
+(define (better-equal a b)
+  (cond ((and (and (symbol? a) (symbol? b)) (eq? a b)) #t)
+        ((and (and (number? a) (number? b)) (= a b)) #t)
+        ((and (list? a) (list? b)) (better-equal (car a) (car b)))
+        (else #f)))
+
+(better-equal '(a b c (1 2) 3.0) '(a b c (1 2) 3))
+
+"Problem 2"
+(define (remove-all x l)
+  (cond ((null? l) '())
+        (
+      
+      

@@ -1,0 +1,12 @@
+"Problem 1a"
+(define (merge la lb )
+   (cond ((null? la ) lb )
+          ((null? lb ) la )
+          ((< (car la )(car lb ))
+           (cons (car la )(merge (cdr la ) lb )))
+          (else
+            (cons (car lb )(merge la (cdr lb ))))))
+
+(define (split l)
+  (let* ((mid ((/ (length l) 2)
+  

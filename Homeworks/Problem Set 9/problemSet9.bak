@@ -1,0 +1,47 @@
+"Problem 1"
+(define (make-checking beginning-balance)
+  (let ((balance beginning-balance)
+        (statements "begining balance: "
+                    ))
+    (define (write-check funds)
+      (cond ((> funds balance)
+          "Insufficient funds")
+          (else (set! balance (- balance funds))
+          balance)))
+    (define (deposit funds)
+      (set! balance (- balance funds))
+      balance)
+    (define (print-statement)
+      ;(display "beginning balance is: ")
+      (display statements)
+      (display beginning-balance))
+      
+    (define (current-balance)
+      (display "balance: ")
+      (newline)
+      balance)
+    (lambda (method)
+      (cond ((eq? method 'write-check) write-check)
+            ((eq? method 'deposit) deposit)
+            ((eq? method 'print-statement) print-statement)
+            ((eq? method 'balance) current-balance)
+            (else 'undefined-operation)))))
+
+(define checking (make-checking 100))
+((checking 'write-check) 10)
+((checking 'write-check) 10)
+((checking 'deposit) 100)
+((checking 'write-check) 10)
+((checking 'print-statement))
+((checking 'balance))
+
+
+
+(define (withdraw f)
+  (cond ((> f balance)
+         "Insufficient funds")
+        (else
+         (set! balance
+               (- balance f))
+         balance)))
+(define (bal-inq) balance)

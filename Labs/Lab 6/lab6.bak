@@ -1,0 +1,14 @@
+"Problem 1a"
+
+(define (make-complex a b)
+  (let* ((i (sqrt -1)))
+  (+ a (* b i))))
+
+(make-complex 2 3)
+
+"Problem 1b"
+(define (real x) ...)
+
+"Problem 1c"
+(define (imag x) ...)
+

@@ -1,0 +1,8 @@
+(define (random-fcn)
+  (let ((multiplier (expt 7 5))
+        (modulus (- (expt 2 31) 1))
+        (seed 19380110.0))
+    (lambda ()
+      (set! seed (modulo (* seed multiplier) modulus))
+      (/ seed modulus))))
+(define random (random-fcn))

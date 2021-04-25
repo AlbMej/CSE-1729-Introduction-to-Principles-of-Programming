@@ -26,5 +26,3 @@
   (newline))
 ;;;;;;;;;;;;;;;;
 
-"Problem 1a"
-(define (stream-filter p str) 
